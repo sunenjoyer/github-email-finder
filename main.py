@@ -27,6 +27,7 @@ class GithubUser:
 			if response.status == 404:
 				print('[-] invalid username')
 				return False
+
 			return True
 
 	async def get_repos(self) -> bool:
@@ -44,6 +45,7 @@ class GithubUser:
 				if repo['fork']:
 					continue
 				self.repos[repo['name']] = []
+
 			return True
 				
 	async def get_commits(self, repo: dict) -> bool:
@@ -62,10 +64,17 @@ class GithubUser:
 
 			return True 
 
-	async def search_commit(self, commit_url: str) -> None:
+	async def search_commit(self, commit_url: str) -> bool:
 		async with self.session.get(commit_url) as response:
+			if response.status != 200:
+				print(f'[-] failed to get commit patch file: {commit_url}')
+				return False
+
 			text = await response.text()
 			emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', text)
+
+			if not emails:
+				return False
 
 			for email in emails:
 				if email not in [entry['email'] for entry in self.emails] and 'users.noreply.github.com' not in email:
@@ -73,6 +82,8 @@ class GithubUser:
 						'email': email,
 						'commit_url': commit_url
 					})
+
+			return True
 
 async def main():
 	username = str(input('[>] username: '))
