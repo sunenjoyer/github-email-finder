@@ -13,7 +13,7 @@ class GithubUser:
 
 		self.session = None
 
-	async def __aenter__(self) -> 'Searcher':
+	async def __aenter__(self) -> 'GithubUser':
 		if not self.session:
 			self.session = aiohttp.ClientSession()
 		return self
